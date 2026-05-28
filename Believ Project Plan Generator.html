@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<!-- saved from url=(0230)file:///C:/Users/JackDavies/AppData/Local/Claude-3p/local-agent-mode-sessions/8e4cfce3-7911-45cd-9148-7e99b60772d9/00000000-0000-4000-8000-000000000001/local_b85f7f0a-c340-4bc2-8d7f-703684a566d9/outputs/project-plan-generator.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Believ – Project Plan Generator</title>
+<style>
+:root {
+  color-scheme: light;
+  --brand-orange: #F7941D;
+  --brand-pink:   #E91E8C;
+  --brand-grad: linear-gradient(135deg, #F7941D 0%, #E91E8C 100%);
+  --charcoal: #2D2D2D;
+  --mid: #6B7280;
+  --light: #F9FAFB;
+  --border: #E5E7EB;
+  --white: #ffffff;
+  /* keep these for Gantt row colours */
+  --navy: #1a1a2e;
+  --row-year-bg: #1a1a2e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #F3F4F6; color: var(--charcoal); }
+
+/* ── SVG LOGO COMPONENT ── */
+.believ-logo { display: flex; align-items: center; gap: 10px; }
+.believ-logo svg { width: 36px; height: 36px; flex-shrink: 0; }
+.believ-logo-text { font-size: 22px; font-weight: 800; color: var(--charcoal); letter-spacing: -0.5px; font-family: 'Segoe UI', Arial, sans-serif; }
+.believ-logo-text.white { color: #fff; }
+
+.screen-header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.screen-title { font-size: 13px; font-weight: 600; color: var(--mid); }
+
+.form-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 16px rgba(0,0,0,0.07); margin: 24px 32px; overflow: hidden; }
+.form-card-header {
+  background: var(--brand-grad);
+  color: #fff; padding: 18px 28px;
+  display: flex; align-items: center; gap: 12px;
+}
+.form-card-header h2 { font-size: 15px; font-weight: 700; }
+.form-card-header p { font-size: 12px; opacity: 0.8; margin-top: 3px; }
+.step-badge {
+  background: rgba(255,255,255,0.25); color: #fff; border-radius: 50%;
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.5);
+}
+.form-body { padding: 24px 28px; }
+.section-label {
+  font-size: 11px; font-weight: 700; color: var(--charcoal); text-transform: uppercase;
+  letter-spacing: 0.6px; padding-bottom: 6px;
+  margin-bottom: 16px; margin-top: 24px;
+  border-bottom: 2px solid transparent;
+  background-image: var(--brand-grad);
+  background-size: 100% 2px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+}
+.section-label:first-child { margin-top: 0; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg label { font-size: 11px; font-weight: 600; color: var(--mid); text-transform: uppercase; letter-spacing: 0.4px; }
+.fg input, .fg textarea, .fg select {
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 9px 12px;
+  font-size: 13.5px; color: var(--charcoal); transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit; background: #fff;
+}
+.fg input:focus, .fg textarea:focus, .fg select:focus {
+  outline: none; border-color: var(--brand-orange); box-shadow: 0 0 0 3px rgba(247,148,29,0.15);
+}
+.fg textarea { resize: vertical; min-height: 70px; }
+.fg.wide { grid-column: 1 / -1; }
+
+/* Year blocks */
+#year-blocks { display: flex; flex-direction: column; gap: 12px; }
+.year-block {
+  border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden;
+}
+.year-block-header {
+  background: var(--light); padding: 11px 16px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.year-block-num {
+  background: var(--brand-grad); color: #fff; border-radius: 6px;
+  padding: 3px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+}
+.year-block-title { font-size: 13px; font-weight: 600; color: var(--charcoal); }
+.year-block-body { padding: 14px 16px; }
+.yr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+
+/* Generate bar */
+.generate-zone {
+  background: var(--light); border-top: 1px solid var(--border);
+  padding: 20px 28px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.btn {
+  padding: 11px 26px; border: none; border-radius: 8px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: all 0.18s; display: flex; align-items: center; gap: 8px;
+}
+.btn-primary { background: var(--brand-grad); color: #fff; box-shadow: 0 3px 12px rgba(247,148,29,0.35); }
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(247,148,29,0.4); }
+.btn-export { background: var(--charcoal); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.btn-export:hover { background: #444; transform: translateY(-1px); }
+.btn-edit { background: #fff; color: var(--mid); border: 2px solid var(--border); }
+.btn-edit:hover { border-color: var(--brand-orange); color: var(--charcoal); }
+.gen-hint { font-size: 12px; color: var(--mid); }
+
+/* Export banner */
+.export-banner {
+  margin: 0 32px 16px;
+  background: linear-gradient(135deg, #fff9e8, #fff3cc);
+  border: 2px solid #f6c90e; border-radius: 10px;
+  padding: 14px 20px; display: none; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.export-banner-icon { font-size: 28px; }
+.export-banner-text h3 { font-size: 14px; font-weight: 700; color: var(--navy); }
+.export-banner-text p { font-size: 12px; color: var(--mid); margin-top: 3px; }
+
+/* Summary cards */
+.summary-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px,1fr)); gap: 12px; margin: 0 32px 20px; }
+.scard { background: #fff; border-radius: 12px; padding: 14px 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border-top: 3px solid var(--brand-orange); }
+.scard.navy { border-top-color: var(--charcoal); }
+.scard.wide { grid-column: 1/-1; border-top-color: var(--brand-pink); }
+.scard-label { font-size: 10px; font-weight: 700; color: var(--mid); text-transform: uppercase; letter-spacing: 0.5px; }
+.scard-value { font-size: 22px; font-weight: 800; color: var(--charcoal); margin-top: 4px; line-height: 1.1; }
+.scard.wide .scard-value { font-size: 13px; font-weight: 400; color: #555; line-height: 1.5; }
+.scard-sub { font-size: 11px; color: var(--mid); margin-top: 4px; }
+
+/* Gantt wrapper */
+#gantt-output { margin: 0 32px 48px; display: none; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+
+/* Cover */
+.gantt-cover {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b4e 50%, #1a1a2e 100%);
+  color: #fff; padding: 30px 36px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;
+  position: relative; overflow: hidden;
+}
+.gantt-cover::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #F7941D 0%, #E91E8C 100%);
+}
+.gc-logo-wrap { display: flex; align-items: center; gap: 10px; }
+.gc-logo-wrap svg { width: 40px; height: 40px; }
+.gc-logo-text { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.gc-tagline { font-size: 10px; color: rgba(255,255,255,0.45); margin-top: 3px; letter-spacing: 1.2px; text-transform: uppercase; }
+.gc-title { font-size: 24px; font-weight: 800; margin-top: 20px; line-height: 1.2; }
+.gc-subtitle { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 5px; }
+.gc-desc {
+  font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 14px;
+  max-width: 500px; line-height: 1.7;
+  border-left: 3px solid var(--brand-orange); padding-left: 12px;
+}
+.gc-right { text-align: right; flex-shrink: 0; }
+.gc-meta-row { font-size: 10px; color: rgba(255,255,255,0.45); margin-bottom: 3px; margin-top: 12px; letter-spacing: 0.3px; text-transform: uppercase; }
+.gc-meta-val { font-size: 13px; font-weight: 700; color: #fff; }
+.gc-badge {
+  margin-top: 18px;
+  background: rgba(247,148,29,0.12);
+  border: 1px solid rgba(247,148,29,0.35);
+  border-radius: 8px; padding: 10px 16px; font-size: 11px;
+  color: rgba(255,255,255,0.75); text-align: center;
+}
+.gc-badge span { display: block; font-size: 22px; font-weight: 800; background: var(--brand-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+/* Table */
+.gantt-scroll { overflow-x: auto; background: #fff; }
+.gantt-table { border-collapse: collapse; font-size: 11px; width: 100%; min-width: 1600px; }
+
+.gantt-table thead tr.hdr-year th {
+  background: var(--navy); color: #fff; font-size: 11px; font-weight: 700;
+  padding: 6px 8px; border-right: 1px solid rgba(255,255,255,0.12); text-align: center;
+}
+.gantt-table thead tr.hdr-meta th {
+  background: #263555; color: rgba(255,255,255,0.9); font-size: 10px; font-weight: 700;
+  padding: 7px 9px; border-right: 1px solid rgba(255,255,255,0.08); white-space: nowrap;
+  position: sticky; top: 0; z-index: 20;
+}
+
+td, th { padding: 4px 8px; border-bottom: 1px solid #edf0f7; }
+.row-project > td { background: #0d1b3e; color: #fff; font-weight: 800; font-size: 12px; }
+.row-year > td { background: #1e3a5f; color: #fff; font-weight: 700; font-size: 11.5px; }
+.row-group > td { background: #eef2f9; font-weight: 700; color: #1a2e5a; font-size: 11px; }
+.row-subgroup > td { background: #f5f7fc; font-weight: 600; color: #2d4072; font-size: 11px; }
+.row-task > td { background: #fff; font-size: 10.5px; }
+.row-task:hover > td, .row-subgroup:hover > td { background: #f0f8f4; }
+.row-milestone > td { background: #fffbf0; font-size: 10.5px; }
+
+.col-id { width: 26px; color: #a0aec0; font-size: 10px; text-align: right; }
+.col-name { min-width: 275px; }
+.indent-1 .col-name { padding-left: 12px; }
+.indent-2 .col-name { padding-left: 22px; }
+.indent-3 .col-name { padding-left: 34px; }
+.indent-4 .col-name { padding-left: 46px; }
+.col-dur { width: 48px; text-align: right; color: var(--mid); font-size: 10px; }
+.col-start, .col-end { width: 76px; font-size: 10px; }
+.col-pred { width: 48px; font-size: 9.5px; color: #c0c8d8; }
+.col-bar { padding: 0 !important; }
+
+.bar-wrap { position: relative; overflow: hidden; height: 24px; }
+.deadline-line {
+  position: absolute; top: 0; bottom: 0; width: 2px;
+  background: repeating-linear-gradient(to bottom, #e91e8c 0px, #e91e8c 4px, transparent 4px, transparent 8px);
+  pointer-events: none; z-index: 5; opacity: 0.85;
+}
+.grid-line { position: absolute; top: 0; bottom: 0; border-left: 1px solid #f0f2f8; pointer-events: none; }
+.grid-yr { border-left-color: #d0d6e8 !important; }
+.bar { position: absolute; top: 50%; transform: translateY(-50%); border-radius: 3px; }
+.bar-project  { height: 5px; background: rgba(255,255,255,0.2); }
+.bar-year     { height: 7px; background: rgba(255,255,255,0.25); }
+.bar-group    { height: 9px; background: rgba(247,148,29,0.25); }
+.bar-subgroup { height: 8px; background: rgba(247,148,29,0.15); }
+.bar-kickoff  { height: 13px; background: #e85d04; }
+.bar-survey   { height: 13px; background: #0077b6; }
+.bar-design   { height: 13px; background: #6a0dad; }
+.bar-tro      { height: 13px; background: #c0392b; }
+.bar-atb      { height: 13px; background: #d35400; }
+.bar-build    { height: 13px; background: #00A651; }
+.bar-task-def { height: 13px; background: #2980b9; }
+.bar-ms {
+  width: 10px !important; height: 10px;
+  background: var(--charcoal); transform: translateY(-50%) rotate(45deg);
+  border-radius: 1px; border: 2px solid #fff;
+}
+.bar-label {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 8.5px; font-weight: 600; color: #fff; pointer-events: none;
+  white-space: nowrap; overflow: hidden; padding: 0 4px; line-height: 13px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+.ms-label {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: 8.5px; font-weight: 700; color: var(--charcoal); white-space: nowrap; margin-left: 14px;
+}
+
+.gantt-footer {
+  background: var(--charcoal); color: rgba(255,255,255,0.55);
+  padding: 13px 24px; display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 8px; font-size: 10px;
+  position: relative;
+}
+.gantt-footer::before {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #F7941D 0%, #E91E8C 100%);
+}
+.gantt-footer strong { color: #fff; }
+.legend-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.leg { display: flex; align-items: center; gap: 5px; font-size: 9.5px; }
+.leg-sw { width: 14px; height: 8px; border-radius: 2px; }
+.leg-ms { width: 8px; height: 8px; background: var(--charcoal); transform: rotate(45deg); border: 1px solid rgba(255,255,255,0.5); flex-shrink: 0; }
+.conf-badge { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 4px 10px; font-size: 9.5px; letter-spacing: 0.6px; }
+
+/* Print */
+@media print {
+  @page { size: A3 landscape; margin: 7mm 5mm; }
+  body { background: #fff !important; }
+  .screen-header, .form-card, .export-banner, .summary-cards { display: none !important; }
+  #gantt-output { display: block !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
+  .gantt-cover, .gantt-cover::before, .gantt-footer, .gantt-footer::before,
+  .row-project > td, .row-year > td, .row-group > td, .row-subgroup > td,
+  .bar-kickoff, .bar-survey, .bar-design, .bar-tro, .bar-atb, .bar-build, .bar-task-def,
+  .bar-ms, .bar-project, .bar-year, .bar-group, .bar-subgroup, .grid-yr,
+  .form-card-header, .year-block-num {
+    print-color-adjust: exact; -webkit-print-color-adjust: exact;
+  }
+  .gantt-scroll { overflow: visible !important; }
+  .gantt-table { min-width: 100% !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="screen-header">
+  <div class="believ-logo">
+    <!-- Believ icon: gradient circle with chain-link -->
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <lineargradient id="bg1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#F7941D"></stop>
+          <stop offset="100%" stop-color="#E91E8C"></stop>
+        </lineargradient>
+      </defs>
+      <circle cx="24" cy="24" r="22" fill="url(#bg1)"></circle>
+      <!-- chain link shape approximating the Believ icon -->
+      <path d="M20 17 C20 13.5 23 11 26.5 11 C30 11 33 13.5 33 17 C33 19 32 20.5 30.5 21.5 L27.5 23.5 C26.5 24 26 24.8 26 25.5 C26 26.5 26.8 27.2 27.8 27.2 C28.5 27.2 29.1 26.9 29.5 26.4 L30.5 25.2 C31.5 26.2 32 27.5 32 29 C32 32.5 29 35 25.5 35 C22 35 19 32.5 19 29 C19 27 20 25.5 21.5 24.5 L24.5 22.5 C25.5 22 26 21.2 26 20.5 C26 19.5 25.2 18.8 24.2 18.8 C23.5 18.8 22.9 19.1 22.5 19.6 L21.5 20.8 C20.5 19.8 20 18.5 20 17Z" fill="white" opacity="0.95"></path>
+    </svg>
+    <div class="believ-logo-text">Believ</div>
+  </div>
+  <div class="screen-title">Project Plan Generator — Proposal Tool</div>
+</div>
+
+<!-- FORM -->
+<div class="form-card" id="form-card">
+  <div class="form-card-header">
+    <div class="step-badge">1</div>
+    <div>
+      <h2>Enter Project Details</h2>
+      <p>Fill in the details and scope per year — all dates are calculated automatically using working days and MS Project predecessor logic.</p>
+    </div>
+  </div>
+  <div class="form-body">
+
+    <div class="section-label">Project Overview</div>
+    <div class="form-grid">
+      <div class="fg">
+        <label>Contract / Project Name</label>
+        <input type="text" id="contractName" value="">
+      </div>
+      <div class="fg">
+        <label>Client Name</label>
+        <input type="text" id="clientName" value="">
+      </div>
+      <div class="fg">
+        <label>Project Start Date</label>
+        <input type="date" id="startDate" value="">
+      </div>
+      <div class="fg">
+        <label>Prepared By</label>
+        <input type="text" id="preparedBy" value="">
+      </div>
+      <div class="fg">
+        <label>Number of Years</label>
+        <select id="numYears" onchange="updateYearBlocks()">
+          <option value="1">1 Year</option>
+          <option value="2" selected="">2 Years</option>
+          <option value="3">3 Years</option>
+          <option value="4">4 Years</option>
+          <option value="5">5 Years</option>
+          <option value="6">6 Years</option>
+          <option value="7">7 Years</option>
+          <option value="8">8 Years</option>
+          <option value="9">9 Years</option>
+          <option value="10">10 Years</option>
+        </select>
+      </div>
+      <div class="fg wide">
+        <label>Project Description (shown on plan)</label>
+        <textarea id="projectDesc"></textarea>
+      </div>
+    </div>
+
+    <div class="section-label">Scope Per Year</div>
+    <div id="year-blocks">
+      <div class="year-block">
+        <div class="year-block-header">
+          <span class="year-block-num">YEAR 1</span>
+          <span class="year-block-title">Scope for Year 1</span>
+        </div>
+        <div class="year-block-body">
+          <div class="yr-grid">
+            <div class="fg"><label>Slow AC Sockets</label><input type="number" id="y1_slowAC" value="" min="0"></div>
+            <div class="fg"><label>Fast AC Sockets</label><input type="number" id="y1_fastAC" value="" min="0"></div>
+            <div class="fg"><label>Rapid DC Sockets</label><input type="number" id="y1_rapidDC" value="" min="0"></div>
+            <div class="fg"><label>Ultra Rapid DC Sockets</label><input type="number" id="y1_ultraDC" value="" min="0"></div>
+            <div class="fg"><label>Must Be Completed By</label><input type="date" id="y1_mustCompleteBy"></div>
+          </div>
+        </div>
+      </div></div>
+
+  </div>
+  <div class="generate-zone">
+    <button class="btn btn-primary" onclick="generatePlan()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      Generate Project Plan
+    </button>
+    <button class="btn btn-export" id="printBtn" style="display:none" onclick="window.print()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      Export as PDF
+    </button>
+    <button class="btn btn-edit" id="editBtn" style="display:none" onclick="resetForm()">← Edit Details</button>
+    <div class="gen-hint" id="gen-hint">Dates calculated using working days (Mon–Fri) with full predecessor logic.</div>
+  </div>
+</div>
+
+<!-- EXPORT BANNER -->
+<div class="export-banner" id="export-banner">
+  <div style="font-size:26px">📄</div>
+  <div>
+    <h3>Your client-ready PDF is one click away</h3>
+    <p>Click <strong>Export as PDF</strong> above → in the print dialog set <strong>Paper: A3, Orientation: Landscape, Margins: Minimum</strong> → Save as PDF.</p>
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="summary-cards" id="summary-cards" style="display:none"></div>
+
+<!-- GANTT -->
+<div id="gantt-output">
+  <div class="gantt-cover">
+    <div>
+      <div class="gc-logo-wrap">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <lineargradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#F7941D"></stop>
+              <stop offset="100%" stop-color="#E91E8C"></stop>
+            </lineargradient>
+          </defs>
+          <circle cx="24" cy="24" r="22" fill="url(#bg2)"></circle>
+          <path d="M20 17 C20 13.5 23 11 26.5 11 C30 11 33 13.5 33 17 C33 19 32 20.5 30.5 21.5 L27.5 23.5 C26.5 24 26 24.8 26 25.5 C26 26.5 26.8 27.2 27.8 27.2 C28.5 27.2 29.1 26.9 29.5 26.4 L30.5 25.2 C31.5 26.2 32 27.5 32 29 C32 32.5 29 35 25.5 35 C22 35 19 32.5 19 29 C19 27 20 25.5 21.5 24.5 L24.5 22.5 C25.5 22 26 21.2 26 20.5 C26 19.5 25.2 18.8 24.2 18.8 C23.5 18.8 22.9 19.1 22.5 19.6 L21.5 20.8 C20.5 19.8 20 18.5 20 17Z" fill="white" opacity="0.95"></path>
+        </svg>
+        <div class="gc-logo-text">Believ</div>
+      </div>
+      <div class="gc-tagline">EV Charging Infrastructure</div>
+      <div class="gc-title" id="gc-title"></div>
+      <div class="gc-subtitle" id="gc-subtitle"></div>
+      <div class="gc-desc" id="gc-desc"></div>
+    </div>
+    <div class="gc-right">
+      <div class="gc-meta-row">Prepared for</div>
+      <div class="gc-meta-val" id="gc-client"></div>
+      <div class="gc-meta-row">Prepared by</div>
+      <div class="gc-meta-val" id="gc-by"></div>
+      <div class="gc-meta-row">Date</div>
+      <div class="gc-meta-val" id="gc-date"></div>
+      <div class="gc-badge"><span id="gc-months"></span>month programme</div>
+    </div>
+  </div>
+
+  <div class="gantt-scroll">
+    <table class="gantt-table" id="gantt-table">
+      <thead>
+        <tr class="hdr-year" id="hdr-year-row"></tr>
+        <tr class="hdr-meta">
+          <th class="col-id">ID</th>
+          <th class="col-name">Task Name</th>
+          <th class="col-dur">Dur.</th>
+          <th class="col-start">Start</th>
+          <th class="col-end">Finish</th>
+          <th class="col-pred">Pred.</th>
+          <th class="col-bar" id="bar-col-hdr"></th>
+        </tr>
+      </thead>
+      <tbody id="gantt-body"></tbody>
+    </table>
+  </div>
+
+  <div class="gantt-footer">
+    <div><strong id="footer-name"></strong><br><span id="footer-dates"></span></div>
+    <div class="legend-row">
+      <div class="leg"><div class="leg-sw" style="background:#e85d04"></div>Kickoff &amp; Approvals</div>
+      <div class="leg"><div class="leg-sw" style="background:#0077b6"></div>Surveys &amp; HLD</div>
+      <div class="leg"><div class="leg-sw" style="background:#6a0dad"></div>Design &amp; Engineering</div>
+      <div class="leg"><div class="leg-sw" style="background:#c0392b"></div>TRO / Engagement</div>
+      <div class="leg"><div class="leg-sw" style="background:#00A651"></div>Build &amp; Commissioning</div>
+      <div class="leg"><div class="leg-ms"></div>Milestone</div>
+    </div>
+    <div class="conf-badge">COMMERCIAL IN CONFIDENCE</div>
+  </div>
+</div>
+
+<script>
+// ── WORKING DAYS ──────────────────────────────────────────────────
+function isWD(d)      { const n=d.getDay(); return n!==0&&n!==6; }
+function addWD(d, n)  { let r=new Date(d); let i=0; while(i<n){r.setDate(r.getDate()+1);if(isWD(r))i++;} return r; }
+function nextWD(d)    { let r=new Date(d); while(!isWD(r))r.setDate(r.getDate()+1); return r; }
+function tEnd(s, dur) { return dur===0?new Date(s):addWD(s,dur-1); }
+function fmt(d)    { return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtL(d)   { return d.toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'}); }
+function fmtS(d)   { return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}); }
+
+// ── YEAR BLOCK UI ──────────────────────────────────────────────────
+// Fields: slowAC, fastAC, rapidDC, ultraDC
+const DEFAULT_DATA = [
+  { slowAC:0, fastAC:0, rapidDC:0, ultraDC:0 },
+  { slowAC:0, fastAC:0, rapidDC:0, ultraDC:0 },
+];
+
+function updateYearBlocks() {
+  const n = parseInt(document.getElementById('numYears').value);
+  const container = document.getElementById('year-blocks');
+  container.innerHTML = '';
+  for (let y = 1; y <= n; y++) {
+    const d = DEFAULT_DATA[y-1] || { slowAC:0, fastAC:0, rapidDC:0, ultraDC:0 };
+    container.innerHTML += `
+      <div class="year-block">
+        <div class="year-block-header">
+          <span class="year-block-num">YEAR ${y}</span>
+          <span class="year-block-title">Scope for Year ${y}</span>
+        </div>
+        <div class="year-block-body">
+          <div class="yr-grid">
+            <div class="fg"><label>Slow AC Sockets</label><input type="number" id="y${y}_slowAC" value="${d.slowAC}" min="0"></div>
+            <div class="fg"><label>Fast AC Sockets</label><input type="number" id="y${y}_fastAC" value="${d.fastAC}" min="0"></div>
+            <div class="fg"><label>Rapid DC Sockets</label><input type="number" id="y${y}_rapidDC" value="${d.rapidDC}" min="0"></div>
+            <div class="fg"><label>Ultra Rapid DC Sockets</label><input type="number" id="y${y}_ultraDC" value="${d.ultraDC}" min="0"></div>
+            <div class="fg"><label>Must Be Completed By</label><input type="date" id="y${y}_mustCompleteBy"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+}
+updateYearBlocks();
+
+// ── BUILD ONE YEAR PHASE ──────────────────────────────────────────
+// Returns {rows, firstId, lastId, phaseEnd}
+// idBase: starting task ID offset to keep IDs unique per year
+function buildYearPhase(phaseStart, yearNum, scope, idBase, rowIdOffset) {
+  const T = {};
+  const s = nextWD(new Date(phaseStart));
+
+  // site selection
+  T['8']  = { s, f: tEnd(s,25), dur:25 };
+  T['9']  = { s: addWD(T['8'].f,1),  f: tEnd(addWD(T['8'].f,1),20), dur:20 };
+  T['10'] = { s: addWD(T['9'].f,1),  f: tEnd(addWD(T['9'].f,1),15), dur:15 };
+  T['11'] = { s: addWD(T['10'].f,1), f: addWD(T['10'].f,1), dur:0 };
+  // surveys
+  T['13'] = { s: addWD(T['11'].f,1), f: tEnd(addWD(T['11'].f,1),25), dur:25 };
+  T['14'] = { s: T['13'].f, f: T['13'].f, dur:0 };
+  T['15'] = { s: T['14'].f, f: T['14'].f, dur:0 };
+  // ATP
+  const a17s = addWD(T['15'].f,1);
+  T['17'] = { s: a17s, f: tEnd(a17s,5), dur:5 };
+  T['18'] = { s: T['17'].f, f: T['17'].f, dur:0 };
+  // design
+  const a20s = addWD(T['18'].f,1);
+  T['20'] = { s: a20s, f: tEnd(a20s,20), dur:20 };
+  const a21s = addWD(T['20'].f,1);
+  T['21'] = { s: a21s, f: tEnd(a21s,15), dur:15 };
+  T['22'] = { s: T['21'].f, f: T['21'].f, dur:0 };
+  // TRO
+  const a24s = addWD(T['22'].f,1);
+  T['24'] = { s: a24s, f: tEnd(a24s,20), dur:20 };
+  const a25s = addWD(T['24'].f,1);
+  T['25'] = { s: a25s, f: tEnd(a25s,28), dur:28 };
+  const a26s = addWD(T['25'].f,1);
+  T['26'] = { s: a26s, f: tEnd(a26s,20), dur:20 };
+  // ATB
+  const a28s = addWD(T['22'].f,1);
+  T['28'] = { s: a28s, f: tEnd(a28s,5), dur:5 };
+  const a29raw = addWD(T['26'].f,1);
+  const a29s = a29raw > addWD(T['28'].f,1) ? a29raw : addWD(T['28'].f,1);
+  T['29'] = { s: a29s, f: a29s, dur:0 };
+  // build
+  const a31s = addWD(T['22'].f,1);
+  T['31'] = { s: a31s, f: tEnd(a31s,20), dur:20 };
+  T['32'] = { s: T['31'].f, f: T['31'].f, dur:0 };
+  const a33s = addWD(T['29'].f,1);
+  T['33'] = { s: a33s, f: tEnd(a33s,12), dur:12 };
+  T['34'] = { s: a33s, f: tEnd(a33s,15), dur:15 };
+  T['35'] = { s: a33s, f: tEnd(a33s,25), dur:25 };
+  const a36s = addWD(T['35'].f,6);
+  T['36'] = { s: a36s, f: tEnd(a36s,50), dur:50 };
+  const a37s = addWD(T['36'].s,5);
+  T['37'] = { s: a37s, f: tEnd(a37s,50), dur:50 };
+  const a38s = addWD(T['37'].s,5);
+  T['38'] = { s: a38s, f: tEnd(a38s,50), dur:50 };
+  const a39s = addWD(T['38'].s,5);
+  T['39'] = { s: a39s, f: tEnd(a39s,50), dur:50 };
+
+  const ib = idBase; // integer base for this year's IDs
+  const totalSockets = scope.slowAC + scope.fastAC + scope.rapidDC + scope.ultraDC;
+  const scopeStr = [
+    scope.slowAC  ? `${scope.slowAC.toLocaleString()} Slow AC sockets`        : '',
+    scope.fastAC  ? `${scope.fastAC.toLocaleString()} Fast AC sockets`        : '',
+    scope.rapidDC ? `${scope.rapidDC.toLocaleString()} Rapid DC sockets`      : '',
+    scope.ultraDC ? `${scope.ultraDC.toLocaleString()} Ultra Rapid DC sockets`: '',
+  ].filter(Boolean).join(' · ');
+
+  const rows = [
+    // Phase row
+    [ib+0, 'row-year','indent-1', `Year ${yearNum} – ${scopeStr}`, '—', s, T['39'].f, '', 'PHASE'],
+    // Group
+    [ib+1, 'row-group','indent-2', `Year ${yearNum}`, '—', s, T['39'].f, '', 'GROUP'],
+    // Site selection
+    [ib+2, 'row-subgroup','indent-3',`Site Selection & Network Planning`, '60d', T['8'].s, T['11'].f, '', 'SG'],
+    [ib+3,  'row-task','indent-4','Assessment of sites provided by Client','25d',T['8'].s,T['8'].f,'',barSpec(T['8'].s,T['8'].f,'bar-task-def','Assessment')],
+    [ib+4,  'row-task','indent-4','Legal to check title of proposed location(s)','20d',T['9'].s,T['9'].f,String(ib+3),barSpec(T['9'].s,T['9'].f,'bar-task-def','Legal check')],
+    [ib+5,  'row-task','indent-4','Review of viable sites with Client','15d',T['10'].s,T['10'].f,String(ib+4),barSpec(T['10'].s,T['10'].f,'bar-task-def','Site review')],
+    [ib+6,  'row-milestone','indent-4','◆  Confirmation of viable sites','0d',T['11'].f,T['11'].f,String(ib+5),barSpec(T['11'].f,T['11'].f,'','')],
+    // Surveys
+    [ib+7,  'row-subgroup','indent-3',`Site Surveys`,'25d',T['13'].s,T['13'].f,'','SG'],
+    [ib+8,  'row-task','indent-4','VM Site visit and High Level Designs (HLD) complete','25d',T['13'].s,T['13'].f,String(ib+6),barSpec(T['13'].s,T['13'].f,'bar-survey','HLD surveys')],
+    [ib+9,  'row-milestone','indent-4','◆  Request DNO quotes','0d',T['14'].f,T['14'].f,String(ib+8),barSpec(T['14'].f,T['14'].f,'','')],
+    [ib+10, 'row-milestone','indent-4','◆  HLD signed off','0d',T['15'].f,T['15'].f,String(ib+9),barSpec(T['15'].f,T['15'].f,'','')],
+    // ATP
+    [ib+11, 'row-subgroup','indent-3',`ATP`,'5d',T['17'].s,T['17'].f,'','SG'],
+    [ib+12, 'row-task','indent-4','Obtain Approval to Plan (ATP)','5d',T['17'].s,T['17'].f,String(ib+10),barSpec(T['17'].s,T['17'].f,'bar-kickoff','ATP')],
+    [ib+13, 'row-milestone','indent-4','◆  ATP Approved','0d',T['18'].f,T['18'].f,String(ib+12),barSpec(T['18'].f,T['18'].f,'','')],
+    // Design
+    [ib+14, 'row-subgroup','indent-3',`Site Design & Engineering`,'35d',T['20'].s,T['21'].f,'','SG'],
+    [ib+15, 'row-task','indent-4','Detailed Drawings Produced','20d',T['20'].s,T['20'].f,String(ib+13),barSpec(T['20'].s,T['20'].f,'bar-design','Detailed drawings')],
+    [ib+16, 'row-task','indent-4','Detailed drawing review by Believ & Client','15d',T['21'].s,T['21'].f,String(ib+15),barSpec(T['21'].s,T['21'].f,'bar-design','Review')],
+    [ib+17, 'row-milestone','indent-4','◆  Approval of detailed drawings','0d',T['22'].f,T['22'].f,String(ib+16),barSpec(T['22'].f,T['22'].f,'','')],
+    // TRO
+    [ib+18, 'row-subgroup','indent-3',`Communications, Publicity, Stakeholder & Resident Engagement`,'68d',T['24'].s,T['26'].f,'','SG'],
+    [ib+19, 'row-task','indent-4','TRO Preparation','20d',T['24'].s,T['24'].f,String(ib+17),barSpec(T['24'].s,T['24'].f,'bar-tro','TRO Prep')],
+    [ib+20, 'row-task','indent-4','TRO Publication','28d',T['25'].s,T['25'].f,String(ib+19),barSpec(T['25'].s,T['25'].f,'bar-tro','TRO Publication')],
+    [ib+21, 'row-task','indent-4','TRO Sign Off','20d',T['26'].s,T['26'].f,String(ib+20),barSpec(T['26'].s,T['26'].f,'bar-tro','TRO Sign Off')],
+    // ATB
+    [ib+22, 'row-subgroup','indent-3',`ATB`,'5d',T['28'].s,T['28'].f,'','SG'],
+    [ib+23, 'row-task','indent-4','Obtain Approval to Build (ATB)','5d',T['28'].s,T['28'].f,String(ib+17),barSpec(T['28'].s,T['28'].f,'bar-atb','ATB')],
+    [ib+24, 'row-milestone','indent-4','◆  ATB Approved','0d',T['29'].f,T['29'].f,String(ib+23),barSpec(T['29'].f,T['29'].f,'','')],
+    // Build
+    [ib+25, 'row-subgroup','indent-3',`Site Build`,'168d',T['31'].s,T['39'].f,'','SG'],
+    [ib+26, 'row-task','indent-4','Initiate licences','20d',T['31'].s,T['31'].f,String(ib+17),barSpec(T['31'].s,T['31'].f,'bar-build','Licences')],
+    [ib+27, 'row-milestone','indent-4','◆  Licences / leases signed','0d',T['32'].f,T['32'].f,String(ib+26),barSpec(T['32'].f,T['32'].f,'','')],
+    [ib+28, 'row-task','indent-4','Bay Suspension / TTRO / Informal Parking Bay Suspension','12d',T['33'].s,T['33'].f,String(ib+24),barSpec(T['33'].s,T['33'].f,'bar-build','Bay Susp.')],
+    [ib+29, 'row-task','indent-4','Section 50 applications and approvals','15d',T['34'].s,T['34'].f,String(ib+24),barSpec(T['34'].s,T['34'].f,'bar-build','S50')],
+    [ib+30, 'row-task','indent-4','Commence Build planning & Issue PO (H&S review)','25d',T['35'].s,T['35'].f,String(ib+24),barSpec(T['35'].s,T['35'].f,'bar-build','Build planning')],
+    [ib+31, 'row-task','indent-4','Civil works – Ducting & Cabinet root installation','50d',T['36'].s,T['36'].f,`${ib+30}FS+5d`,barSpec(T['36'].s,T['36'].f,'bar-build','Civil works')],
+    [ib+32, 'row-task','indent-4','DNO Connection: Excavation & Connection','50d',T['37'].s,T['37'].f,`${ib+31}SS+5d`,barSpec(T['37'].s,T['37'].f,'bar-build','DNO connection')],
+    [ib+33, 'row-task','indent-4','Meter installation','50d',T['38'].s,T['38'].f,`${ib+32}SS+5d`,barSpec(T['38'].s,T['38'].f,'bar-build','Meters')],
+    [ib+34, 'row-task','indent-4','Cabling, CP install & Commissioning','50d',T['39'].s,T['39'].f,`${ib+33}SS+5d`,barSpec(T['39'].s,T['39'].f,'bar-build','Commissioning')],
+  ];
+
+  return { rows, phaseStart: s, phaseEnd: T['39'].f };
+}
+
+// Placeholder — bar HTML is deferred until we know the timeline scale
+function barSpec(s, f, cls, lbl) {
+  return { s, f, cls, lbl };
+}
+
+// ── MAIN GENERATE ─────────────────────────────────────────────────
+function generatePlan() {
+  const name   = document.getElementById('contractName').value || 'Project Plan';
+  const sdStr  = document.getElementById('startDate').value;
+  const client = document.getElementById('clientName').value;
+  const by     = document.getElementById('preparedBy').value;
+  const desc   = document.getElementById('projectDesc').value;
+  const numYrs = parseInt(document.getElementById('numYears').value);
+  if (!sdStr) { alert('Please enter a start date.'); return; }
+
+  const ps = nextWD(new Date(sdStr));
+
+  // Kickoff phase
+  const kickoffEnd = tEnd(ps, 30);
+  const y1PhaseStart = addWD(ps, 30); // Y1 starts 30wd after kickoff
+
+  // Build all year phases — years can overlap; mustCompleteBy constrains the start
+  // Phase duration is fixed at 317 working days (unchanged from before)
+  const PHASE_DUR_WD = 317;
+
+  // Helper: subtract N working days from a date (walk backwards)
+  function subWD(d, n) {
+    let r = new Date(d); let i = 0;
+    while (i < n) { r.setDate(r.getDate()-1); if (isWD(r)) i++; }
+    return r;
+  }
+
+  let allYearRows = [];
+  let yearMeta = []; // {start, end, scope}
+
+  for (let y = 1; y <= numYrs; y++) {
+    const scope = {
+      slowAC:  parseInt(document.getElementById(`y${y}_slowAC`).value)  || 0,
+      fastAC:  parseInt(document.getElementById(`y${y}_fastAC`).value)  || 0,
+      rapidDC: parseInt(document.getElementById(`y${y}_rapidDC`).value) || 0,
+      ultraDC: parseInt(document.getElementById(`y${y}_ultraDC`).value) || 0,
+      mustCompleteBy: document.getElementById(`y${y}_mustCompleteBy`).value || null,
+    };
+
+    // Default start: y1 starts after kickoff; subsequent years start 317wd after prev year start
+    let naturalStart = y === 1
+      ? y1PhaseStart
+      : addWD(yearMeta[y-2].start, PHASE_DUR_WD);
+
+    // If mustCompleteBy is set, work backwards: phase must finish by that date
+    // The phase end is ~317wd after its start, so start = mustCompleteBy - 317wd
+    if (scope.mustCompleteBy) {
+      const deadline = nextWD(new Date(scope.mustCompleteBy));
+      const latestStart = subWD(deadline, PHASE_DUR_WD);
+      // Use the earlier of naturalStart and latestStart (pull forward if needed)
+      // Never start before y1PhaseStart
+      const constrainedStart = latestStart < naturalStart ? latestStart : naturalStart;
+      const minStart = y === 1 ? y1PhaseStart : yearMeta[y-2].start;
+      naturalStart = constrainedStart < minStart ? minStart : constrainedStart;
+    }
+
+    const idBase = 100 + (y-1) * 50;
+    const result = buildYearPhase(naturalStart, y, scope, idBase);
+    allYearRows.push(...result.rows);
+    yearMeta.push({ start: result.phaseStart, end: result.phaseEnd, scope });
+  }
+
+  const overallEnd = yearMeta.reduce((mx, ym) => ym.end > mx ? ym.end : mx, yearMeta[0].end);
+  const totalMonths = Math.round((overallEnd - ps) / (1000*60*60*24*30.5));
+
+  // Totals
+  let totalSlowAC = 0, totalFastAC = 0, totalRapidDC = 0, totalUltraDC = 0;
+  yearMeta.forEach(ym => {
+    totalSlowAC  += ym.scope.slowAC;
+    totalFastAC  += ym.scope.fastAC;
+    totalRapidDC += ym.scope.rapidDC;
+    totalUltraDC += ym.scope.ultraDC;
+  });
+  const totalSockets = totalSlowAC + totalFastAC + totalRapidDC + totalUltraDC;
+
+  // Cover
+  document.getElementById('gc-title').textContent = name;
+  document.getElementById('gc-subtitle').textContent = `Proposed Programme of Works · ${fmtL(ps)} – ${fmtL(overallEnd)}`;
+  document.getElementById('gc-desc').textContent = desc;
+  document.getElementById('gc-client').textContent = client;
+  document.getElementById('gc-by').textContent = by;
+  document.getElementById('gc-date').textContent = fmtL(new Date());
+  document.getElementById('gc-months').textContent = totalMonths + '-';
+  document.getElementById('footer-name').textContent = name + ' — Project Programme';
+  document.getElementById('footer-dates').textContent = `${fmtL(ps)} to ${fmtL(overallEnd)} · Prepared by ${by} · ${fmtL(new Date())} · COMMERCIAL IN CONFIDENCE`;
+
+  // Summary cards
+  const sc = document.getElementById('summary-cards');
+  const startMonth = ps.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const endMonth   = overallEnd.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  let cardHtml = `
+    <div class="scard"><div class="scard-label">Programme</div><div class="scard-value">${totalMonths}</div><div class="scard-sub">months total</div></div>
+    <div class="scard"><div class="scard-label">Total Sockets</div><div class="scard-value">${totalSockets.toLocaleString()}</div><div class="scard-sub">${totalSlowAC.toLocaleString()} Slow · ${totalFastAC.toLocaleString()} Fast · ${totalRapidDC.toLocaleString()} Rapid · ${totalUltraDC.toLocaleString()} Ultra</div></div>
+    <div class="scard navy"><div class="scard-label">Start</div><div class="scard-value" style="font-size:14px;line-height:1.2">${startMonth}</div><div class="scard-sub">Mobilisation</div></div>
+    <div class="scard navy"><div class="scard-label">End</div><div class="scard-value" style="font-size:14px;line-height:1.2">${endMonth}</div><div class="scard-sub">Full commissioning</div></div>
+  `;
+  yearMeta.forEach((ym, i) => {
+    const s = ym.scope;
+    const totalYrSockets = s.slowAC + s.fastAC + s.rapidDC + s.ultraDC;
+    const parts = [
+      s.slowAC  ? `${s.slowAC.toLocaleString()} Slow AC`       : '',
+      s.fastAC  ? `${s.fastAC.toLocaleString()} Fast AC`       : '',
+      s.rapidDC ? `${s.rapidDC.toLocaleString()} Rapid DC`     : '',
+      s.ultraDC ? `${s.ultraDC.toLocaleString()} Ultra Rapid DC` : '',
+    ].filter(Boolean).join(' · ');
+    const mcb = s.mustCompleteBy ? new Date(s.mustCompleteBy) : null;
+    const mcbHtml = mcb
+      ? (() => { const over = ym.end > mcb; return `<div class="scard-sub" style="margin-top:5px;font-weight:700;color:${over?'#c0392b':'#27ae60'}">${over?'⚠':'✓'} Must complete by: ${fmtL(mcb)}${over?' — overruns':''}</div>`; })()
+      : '';
+    cardHtml += `<div class="scard"><div class="scard-label">Year ${i+1}</div><div class="scard-value" style="font-size:13px;font-weight:700;line-height:1.4">${totalYrSockets.toLocaleString()} sockets</div><div class="scard-sub">${parts||'—'}</div><div class="scard-sub" style="margin-top:3px;color:#999">${fmt(ym.start)} → ${fmt(ym.end)}</div>${mcbHtml}</div>`;
+  });
+  cardHtml += `<div class="scard wide"><div class="scard-label">Description</div><div class="scard-value">${desc}</div></div>`;
+  sc.innerHTML = cardHtml;
+  sc.style.display = 'grid';
+
+  // ── TIMELINE ────────────────────────────────────────────────────
+  const tlStart = new Date(ps); tlStart.setDate(1);
+  const tlEnd   = new Date(overallEnd); tlEnd.setMonth(tlEnd.getMonth()+2); tlEnd.setDate(1);
+  const BAR_W = 1600;
+  const pxPms = BAR_W / (tlEnd - tlStart);
+  function bx(d)   { return Math.round((new Date(d)-tlStart)*pxPms); }
+  function bw(s,f) { return Math.max(6, Math.round((new Date(f)-new Date(s))*pxPms)); }
+
+  // Grid lines
+  let months = [];
+  let cur = new Date(tlStart);
+  while (cur < tlEnd) { months.push(new Date(cur)); cur.setMonth(cur.getMonth()+1); }
+  let gridLines = '';
+  months.forEach(m => {
+    gridLines += `<div class="grid-line${m.getMonth()===0?' grid-yr':''}" style="left:${bx(m)}px"></div>`;
+  });
+
+  // Year header only (quarters removed)
+  let yearMap = {};
+  months.forEach(m => { const y=m.getFullYear(); if(!yearMap[y])yearMap[y]=[]; yearMap[y].push(m); });
+  const fixedCols = `<th class="col-id" style="background:var(--navy)"></th><th class="col-name" style="background:var(--navy)"></th><th class="col-dur" style="background:var(--navy)"></th><th class="col-start" style="background:var(--navy)"></th><th class="col-end" style="background:var(--navy)"></th><th class="col-pred" style="background:var(--navy)"></th>`;
+  let yearHtml='';
+  Object.keys(yearMap).sort().forEach(yr => {
+    const ms = yearMap[yr];
+    const ys = ms[0], ye = new Date(ms[ms.length-1]); ye.setMonth(ye.getMonth()+1);
+    yearHtml += `<th style="width:${Math.round((ye-ys)*pxPms)}px;text-align:center">${yr}</th>`;
+  });
+  document.getElementById('hdr-year-row').innerHTML = fixedCols + yearHtml;
+  document.getElementById('bar-col-hdr').style.width = BAR_W + 'px';
+
+  function bWrap(barsHtml) {
+    return `<td class="col-bar"><div class="bar-wrap" style="width:${BAR_W}px">${gridLines}${barsHtml}</div></td>`;
+  }
+  function renderBar(spec) {
+    if(!spec||!spec.s||!spec.f) return '';
+    const {s,f,cls,lbl} = spec;
+    const x=bx(s), w=bw(s,f);
+    if(f-s<1000*60*60) {
+      return `<div class="bar bar-ms" style="left:${x}px"></div><div class="ms-label" style="left:${x+14}px">${fmtS(new Date(s))}</div>`;
+    }
+    const lb = lbl&&w>28 ? `<div class="bar-label" style="left:${x}px;width:${w}px">${lbl}</div>` : '';
+    return `<div class="bar ${cls}" style="left:${x}px;width:${w}px"></div>${lb}`;
+  }
+  function summaryBar(s,f,cls) {
+    const x=bx(s),w=bw(s,f);
+    return `<div class="bar ${cls}" style="left:${x}px;width:${w}px"></div>`;
+  }
+
+  // Build final rows
+  // Project header row
+  const projectRows = [
+    [0,'row-project','',name,'—',ps,overallEnd,'',summaryBar(ps,overallEnd,'bar-project')],
+    [1,'row-group','indent-1','Project Kick Off and Contract Finalisation','30d',ps,kickoffEnd,'',
+      `<div class="bar bar-kickoff" style="left:${bx(ps)}px;width:${bw(ps,kickoffEnd)}px"></div><div class="bar-label" style="left:${bx(ps)}px;width:${bw(ps,kickoffEnd)}px">Kick Off</div>`],
+  ];
+
+  // Process year rows — replace SG/PHASE/GROUP markers
+  const processedYearRows = allYearRows.map(row => {
+    const [id, rowCls, indCls, label, dur, s, f, pred, barSpecOrStr] = row;
+    let barHtml = '';
+    if (barSpecOrStr === 'PHASE') {
+      barHtml = summaryBar(s, f, 'bar-year');
+    } else if (barSpecOrStr === 'GROUP') {
+      barHtml = summaryBar(s, f, 'bar-group');
+    } else if (barSpecOrStr === 'SG') {
+      barHtml = summaryBar(s, f, 'bar-subgroup');
+    } else {
+      barHtml = renderBar(barSpecOrStr);
+    }
+    return [id, rowCls, indCls, label, dur, s, f, pred, barHtml];
+  });
+
+  const allRows = [...projectRows, ...processedYearRows];
+
+  // Build deadline marker overlay HTML (red dashed line per year with mustCompleteBy)
+  let deadlineOverlays = '';
+  yearMeta.forEach(ym => {
+    if (ym.scope.mustCompleteBy) {
+      const dl = new Date(ym.scope.mustCompleteBy);
+      const dlX = bx(dl);
+      if (dlX > 0 && dlX < BAR_W) {
+        deadlineOverlays += `<div class="deadline-line" style="left:${dlX}px" title="Must complete by: ${fmtL(dl)}"></div>`;
+      }
+    }
+  });
+
+  function bWrapWithDeadlines(barsHtml) {
+    return `<td class="col-bar"><div class="bar-wrap" style="width:${BAR_W}px">${gridLines}${deadlineOverlays}${barsHtml}</div></td>`;
+  }
+
+  document.getElementById('gantt-body').innerHTML = allRows.map(
+    ([id, rowCls, indCls, label, dur, s, f, pred, barHtml]) =>
+    `<tr class="${rowCls} ${indCls}">
+      <td class="col-id">${id}</td>
+      <td class="col-name">${label}</td>
+      <td class="col-dur">${dur}</td>
+      <td class="col-start">${s?fmt(new Date(s)):''}</td>
+      <td class="col-end">${f?fmt(new Date(f)):''}</td>
+      <td class="col-pred">${pred}</td>
+      ${bWrapWithDeadlines(barHtml)}
+    </tr>`
+  ).join('');
+
+  document.getElementById('gantt-output').style.display = 'block';
+  document.getElementById('printBtn').style.display = 'flex';
+  document.getElementById('editBtn').style.display  = 'flex';
+  document.getElementById('export-banner').style.display = 'flex';
+  document.getElementById('gen-hint').style.display = 'none';
+  document.getElementById('gantt-output').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function resetForm() {
+  document.getElementById('gantt-output').style.display = 'none';
+  document.getElementById('summary-cards').style.display = 'none';
+  document.getElementById('export-banner').style.display = 'none';
+  document.getElementById('printBtn').style.display = 'none';
+  document.getElementById('editBtn').style.display  = 'none';
+  document.getElementById('gen-hint').style.display = 'block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+
+
+</body></html>
